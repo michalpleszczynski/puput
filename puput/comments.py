@@ -1,3 +1,16 @@
+def get_context_for_provider(provider_name, blog_page, entry):
+    if provider_name == 'disqus':
+        return {
+            'disqus_shortname': blog_page.disqus_shortname,
+            'disqus_identifier': entry.id
+        }
+    if provider_name == 'django_comments':
+        return {
+            'entry': entry
+        }
+    return {}
+
+
 def get_num_comments_with_disqus(blog_page, entry_page):
     try:
         from tapioca.exceptions import ClientError

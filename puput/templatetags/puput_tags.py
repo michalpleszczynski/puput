@@ -1,10 +1,11 @@
+from django.conf import settings
 from django.template import Library
 from django.urls import resolve
-from django.template.loader import render_to_string
 from django.template.defaultfilters import urlencode
 from django_social_share.templatetags.social_share import _build_url
 from el_pagination.templatetags.el_pagination_tags import show_pages, paginate
 
+from ..comments import get_context_for_provider
 from ..urls import get_entry_url, get_feeds_url
 from ..models import Category, Tag
 
@@ -84,17 +85,16 @@ def feeds_url(context, blog_page):
     return get_feeds_url(blog_page.page_ptr, context['request'].site.root_page)
 
 
-@register.simple_tag(takes_context=True)
+@register.inclusion_tag('puput/comments/list.html', takes_context=True)
 def show_comments(context):
     blog_page = context['blog_page']
     entry = context['self']
-    if blog_page.display_comments and blog_page.disqus_shortname:
-        ctx = {
-            'disqus_shortname': blog_page.disqus_shortname,
-            'disqus_identifier': entry.id
-        }
-        return render_to_string('puput/comments/disqus.html', context=ctx)
-    return ""
+    if blog_page.display_comments:
+        try:
+            return get_context_for_provider(settings.PUPUT_COMMENTS_PROVIDER, blog_page, entry)
+        except AttributeError:
+            raise Exception('To use comments you need to specify PUPUT_COMMENTS_PROVIDER in settings.')
+    return {}
 
 
 # Avoid to import endless_pagination in installed_apps and in the templates
