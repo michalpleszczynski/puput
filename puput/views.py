@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.views.generic import View
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -5,7 +6,7 @@ from django.utils.decorators import method_decorator
 
 from wagtail.core import hooks
 
-from .comments import get_num_comments_with_disqus
+from .comments import get_num_comments_for_provider, SUPPORTED_PROVIDERS
 from .models import EntryPage
 from .utils import strip_prefix_and_ending_slash
 
@@ -56,10 +57,10 @@ class EntryPageUpdateCommentsView(View):
             entry_page = EntryPage.objects.get(pk=entry_page_id)
             blog_page = entry_page.blog_page
             num_comments = 0
-            if blog_page.disqus_api_secret:
-                num_comments = get_num_comments_with_disqus(blog_page, entry_page)
+            if settings.PUPUT_COMMENTS_PROVIDER in SUPPORTED_PROVIDERS:
+                num_comments = get_num_comments_for_provider(settings.PUPUT_COMMENTS_PROVIDER, blog_page, entry_page)
             entry_page.num_comments = num_comments
-            entry_page.save()
+            entry_page.save(updated_fields=('num_comments',))
             return HttpResponse()
         except EntryPage.DoesNotExist:
             raise Http404
