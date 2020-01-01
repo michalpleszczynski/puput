@@ -56,11 +56,10 @@ class EntryPageUpdateCommentsView(View):
         try:
             entry_page = EntryPage.objects.get(pk=entry_page_id)
             blog_page = entry_page.blog_page
-            num_comments = 0
             if settings.PUPUT_COMMENTS_PROVIDER in SUPPORTED_PROVIDERS:
                 num_comments = get_num_comments_for_provider(settings.PUPUT_COMMENTS_PROVIDER, blog_page, entry_page)
-            entry_page.num_comments = num_comments
-            entry_page.save(updated_fields=('num_comments',))
+                entry_page.num_comments = num_comments
+                entry_page.save(update_fields=('num_comments',))
             return HttpResponse()
         except EntryPage.DoesNotExist:
             raise Http404
