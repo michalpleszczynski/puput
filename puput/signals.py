@@ -13,8 +13,8 @@ def update_comment_count(sender, **kwargs):
 
 
 try:
-    from django_comments.signals import comment_was_posted
+    from django_comments_xtd.signals import confirmation_received
 
-    comment_was_posted.connect(update_comment_count, dispatch_uid="puput_comment_posted_id")
+    confirmation_received.connect(update_comment_count, dispatch_uid="puput_comment_posted_id")
 except ImportError:
     pass
