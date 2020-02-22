@@ -1,11 +1,11 @@
-from django.conf import settings
 from django.template import Library
 from django.urls import resolve
 from django.template.defaultfilters import urlencode
 from django_social_share.templatetags.social_share import _build_url
 from el_pagination.templatetags.el_pagination_tags import show_pages, paginate
 
-from ..comments import get_context_for_provider
+from ..conf import settings
+from ..utils import import_model
 from ..urls import get_entry_url, get_feeds_url
 from ..models import Category, Tag
 
@@ -91,7 +91,8 @@ def show_comments(context):
     entry = context['self']
     if blog_page.display_comments:
         try:
-            return get_context_for_provider(settings.PUPUT_COMMENTS_PROVIDER, blog_page, entry)
+            comment_class = import_model(settings.PUPUT_COMMENTS_PROVIDER)(blog_page, entry)
+            return comment_class.get_context()
         except AttributeError:
             raise Exception('To use comments you need to specify PUPUT_COMMENTS_PROVIDER in settings.')
     return {}

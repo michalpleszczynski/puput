@@ -6,9 +6,8 @@ from django.utils.decorators import method_decorator
 
 from wagtail.core import hooks
 
-from .comments import get_num_comments_for_provider, SUPPORTED_PROVIDERS
 from .models import EntryPage
-from .utils import strip_prefix_and_ending_slash
+from .utils import strip_prefix_and_ending_slash, import_model
 
 
 class EntryPageServe(View):
@@ -56,10 +55,10 @@ class EntryPageUpdateCommentsView(View):
         try:
             entry_page = EntryPage.objects.get(pk=entry_page_id)
             blog_page = entry_page.blog_page
-            if settings.PUPUT_COMMENTS_PROVIDER in SUPPORTED_PROVIDERS:
-                num_comments = get_num_comments_for_provider(settings.PUPUT_COMMENTS_PROVIDER, blog_page, entry_page)
-                entry_page.num_comments = num_comments
-                entry_page.save(update_fields=('num_comments',))
+            comment_class = import_model(settings.PUPUT_COMMENTS_PROVIDER)(blog_page, entry_page)
+            num_comments = comment_class.get_num_comments()
+            entry_page.num_comments = num_comments
+            entry_page.save(update_fields=('num_comments',))
             return HttpResponse()
         except EntryPage.DoesNotExist:
             raise Http404
